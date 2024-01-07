@@ -25,6 +25,8 @@ public:
 private slots:
     void on_add_Button_clicked();
     void slot_addInfo(CStuInfo &info);
+    void slot_itemChanged(QStandardItem *item);
+    void on_checkBox_clicked(bool checked);
 
 private:
     void InitUI();

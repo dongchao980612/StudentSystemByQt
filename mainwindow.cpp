@@ -27,6 +27,8 @@ void MainWindow::InitUI()
 {
     m_standardModel = new QStandardItemModel(this);
 
+    connect(m_standardModel, &QStandardItemModel::itemChanged, this, &MainWindow::slot_itemChanged);
+
     // 查询数据
     QList<CStuInfo> stuInfoList;
     bool ret = m_dataSource->seleteStuInfo(stuInfoList);
@@ -109,5 +111,44 @@ void MainWindow::slot_addInfo(CStuInfo &info)
     else
     {
         appendToModel(info);
+    }
+}
+
+void MainWindow::slot_itemChanged(QStandardItem *item)
+{
+    if(m_standardModel->indexFromItem(item).column() > 0)
+    {
+        return ;
+    }
+    else
+    {
+        for (int row = 0; row < m_standardModel->rowCount(); row++)
+        {
+            if(m_standardModel->item(row)->checkState() != Qt::Checked)
+            {
+                ui->checkBox->setChecked(false);
+                return;
+            }
+            else
+            {
+                ui->checkBox->setChecked(true);
+                return;
+            }
+        }
+    }
+}
+
+void MainWindow::on_checkBox_clicked(bool checked)
+{
+    for (int row = 0; row < m_standardModel->rowCount(); row++)
+    {
+        if(checked)
+        {
+            m_standardModel->item(row)->setCheckState(Qt::Checked);
+        }
+        else
+        {
+            m_standardModel->item(row)->setCheckState(Qt::Unchecked);
+        }
     }
 }
