@@ -25,7 +25,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="delete_Button_2">
+       <widget class="QPushButton" name="delete_Button">
         <property name="text">
          <string>删除</string>
         </property>

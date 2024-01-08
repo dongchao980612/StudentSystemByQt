@@ -8,7 +8,7 @@ AddStuInfoDialog::AddStuInfoDialog(QWidget *parent) :
     ui->setupUi(this);
     this->setMaximumSize(250, 300);
     this->setMinimumSize(250, 300);
-    this->setWindowTitle("添加学生信息");
+    this->setWindowTitle("添加/修改学生信息");
 
     this->InitUI();
 }
@@ -16,6 +16,17 @@ AddStuInfoDialog::AddStuInfoDialog(QWidget *parent) :
 AddStuInfoDialog::~AddStuInfoDialog()
 {
     delete ui;
+}
+
+bool AddStuInfoDialog::display(int id, QString name, QString sex, QString phone, int cet4, double gpa)
+{
+    ui->lineEdit_ID->setText(QString("%1").arg(id, 4, 10, QLatin1Char('0')));
+    ui->lineEdit_ID->setReadOnly(true);
+    ui->lineEdit_Name->setText(name);
+    ui->comboBox_Sex->setCurrentText(sex);
+    ui->lineEdit_Phone->setText(phone);
+    ui->spinBox_Cet4->setValue(cet4);
+    ui->doubleSpinBox_Gpa->setValue(gpa);
 }
 
 void AddStuInfoDialog::on_pushButton_OK_clicked()
@@ -52,9 +63,19 @@ void AddStuInfoDialog::on_pushButton_OK_clicked()
 
 
     CStuInfo info(Id, Name, Sex, Phone, Cet4, Gpa);
-    emit sig_addInfo(info);
 
-    this->clearData();
+    if(m_isUpdateDLG)
+    {
+        sig_updateInfo(info);
+    }
+    else
+    {
+        emit sig_addInfo(info);
+        this->clearData();
+    }
+
+
+
 }
 
 void AddStuInfoDialog::InitUI()
@@ -100,6 +121,16 @@ void AddStuInfoDialog::clearData()
     ui->spinBox_Cet4->setValue(0);
     ui->doubleSpinBox_Gpa->setValue(0);
 
+}
+
+bool AddStuInfoDialog::isUpdateDLG() const
+{
+    return m_isUpdateDLG;
+}
+
+void AddStuInfoDialog::setIsUpdateDLG(bool isUpdateDLG)
+{
+    m_isUpdateDLG = isUpdateDLG;
 }
 
 void AddStuInfoDialog::on_pushButton_Cancel_clicked()

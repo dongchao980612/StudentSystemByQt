@@ -37,7 +37,7 @@ CDataSourceSQLite::CDataSourceSQLite()
 }
 CDataSourceSQLite::~CDataSourceSQLite()
 {
-    qDebug() << "~CDataSourceSQLite...";
+
 }
 
 bool CDataSourceSQLite::seleteStuInfo(QList<CStuInfo> &stuInfoList)
@@ -114,12 +114,64 @@ bool CDataSourceSQLite::addStuInfo(CStuInfo &stuInfo)
 
 bool CDataSourceSQLite::updateStuInfo(CStuInfo &stuInfo)
 {
-    Q_UNUSED(stuInfo);
+    qDebug() << __FUNCTION__;
+    if(!m_db.open())
+    {
+        qDebug() << "database open error...";
+        return false;
+    }
+    else
+    {
+
+        int Id = stuInfo.id();
+        QString Name = stuInfo.name();
+        QString Sex = stuInfo.sex();
+        QString Phone = stuInfo.phone();
+        int Cet4 = stuInfo.cet4();
+        double Gpa = stuInfo.gpa();
+        double OverallScore = stuInfo.overallScore();
+
+        QSqlQuery query;
+        QString sql = QString("update tb_student set name='%2',sex='%3',phone='%4',cet4=%5,gpa=%6,overallScore=%7 where id=%1").arg(Id).arg(Name).arg(Sex).arg(Phone).arg(Cet4).arg(Gpa).arg(OverallScore);
+        if(!query.exec(sql))
+        {
+            qDebug() << "lastError" << query.lastError().text();
+            qDebug() << sql;
+            qDebug() << "exec insert sql error...";
+            return false;
+        }
+        else
+        {
+            m_db.close();
+            return true ;
+        }
+    }
     return true ;
 }
 
 bool CDataSourceSQLite::deleteStuInfo(int id)
 {
-    Q_UNUSED(id);
-    return true ;
+    if(!m_db.open())
+    {
+        qDebug() << "database open error...";
+        return false;
+    }
+    else
+    {
+        QSqlQuery query;
+        QString sql = QString("delete from tb_student where id= %1").arg(id);
+        if(!query.exec(sql))
+        {
+            qDebug() << "lastError" << query.lastError().text();
+            qDebug() << sql;
+            qDebug() << "exec insert sql error...";
+            return false;
+        }
+        else
+        {
+            m_db.close();
+            return true ;
+        }
+    }
 }
+
