@@ -5,6 +5,9 @@
 
 #include "cdatasourcesqlite.h"
 #include "cstuinfo.h"
+
+#include  "addstuinfodialog.h"
+
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
@@ -33,5 +36,9 @@ int main(int argc, char *argv[])
     qDebug() << stu_info_list.at(0) << endl;
 #endif
 
+#if 0
+    AddStuInfoDialog d;
+    d.show();
+#endif
     return a.exec();
 }

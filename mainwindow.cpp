@@ -13,6 +13,12 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_dataSource = new CDataSourceSQLite();
     m_standardModel = new QStandardItemModel(this);
+    m_addStuInfo = new AddStuInfoDialog(this);
+
+    connect(m_addStuInfo, &AddStuInfoDialog::sig_addInfo,
+            this, &MainWindow::slot_addInfo);
+
+
 
     addCss();
     initUI();
@@ -26,6 +32,12 @@ MainWindow::~MainWindow()
 {
     delete m_dataSource;
     delete ui;
+}
+
+void MainWindow::slot_addInfo(CStuInfo &stuInfo)
+{
+    m_dataSource->addStuInfo(stuInfo);
+    appendToModel(stuInfo);
 }
 
 void MainWindow::initUI()
@@ -167,3 +179,9 @@ bool MainWindow::appendToModel(CStuInfo &stuInfo)
 
 }
 
+
+void MainWindow::on_add_Button_clicked()
+{
+
+    m_addStuInfo->exec();
+}

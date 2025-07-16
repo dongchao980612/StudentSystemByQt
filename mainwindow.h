@@ -12,6 +12,7 @@
 
 #include "cdatasourcesqlite.h"
 #include "cstuinfo.h"
+#include  "addstuinfodialog.h"
 
 #define WIDTH 1100
 #define HEIGHT 800
@@ -40,6 +41,8 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 private slots:
+    void  slot_addInfo(CStuInfo &stuInfo);
+    void on_add_Button_clicked();
 
 private:
     void initUI();
@@ -51,7 +54,7 @@ private:
 
     CDataSourceSQLite *m_dataSource;  // 数据源
     QStandardItemModel *m_standardModel;  // 数据模型
-
+    AddStuInfoDialog *m_addStuInfo;
 
 };
 #endif // MAINWINDOW_H

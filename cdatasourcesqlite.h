@@ -9,6 +9,10 @@
 
 #include <QDebug>
 
+#define EXEC_SUCCESS 0
+#define EXEC_FAILURE -1
+
+
 class CDataSourceSQLite: public IDataSource
 {
 public:
