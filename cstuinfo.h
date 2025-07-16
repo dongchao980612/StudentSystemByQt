@@ -1,13 +1,19 @@
 #ifndef CSTUINFO_H
 #define CSTUINFO_H
+
 #include <QString>
 #include <iostream>
+#include <QDebug>
+
+
 
 class CStuInfo
 {
 public:
     CStuInfo();
     CStuInfo(int id, QString name, QString sex, QString phone, int cet4, double gpa);
+
+    bool  setData(int id, QString name, QString sex, QString phone, int cet4, double gpa);
 
     int id() const;
     void setId(int id);
@@ -30,8 +36,7 @@ public:
     double overallScore() const;
     void setOverallScore(double overallScore);
 
-    friend std::ostream &operator<<(std::ostream &os, const CStuInfo &stuinfo);
-
+    friend QDebug operator<<(QDebug dbg, const CStuInfo &stu);
 private:
     int m_id ; // 学生ID，4位
     QString m_name; // 姓名
@@ -41,6 +46,5 @@ private:
     double m_gpa;// 平均成绩，0-4
     double  m_overallScore; // 总成绩，100 = m_cet4 * 0.04 + m_gpa * 17.5
 };
-
 
 #endif // CSTUINFO_H

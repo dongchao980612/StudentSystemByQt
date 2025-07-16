@@ -11,7 +11,10 @@
 #include <QAction>
 
 #include "cdatasourcesqlite.h"
-#include "addstuinfodialog.h"
+#include "cstuinfo.h"
+
+#define WIDTH 1100
+#define HEIGHT 800
 
 #define ID_COLUMN 0
 #define NAME_COLUMN 1
@@ -37,30 +40,18 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 private slots:
-    void on_add_Button_clicked();
-    void on_checkBox_clicked(bool checked);
-    void on_delete_Button_clicked();
-
-    void slot_addInfo(CStuInfo &info);
-    void slot_updateInfo(CStuInfo &info);
-
-
-    void slot_itemChanged(QStandardItem *item);
-    void slot_popMenu(const QPoint &pos);
-    void slot_actupdate(bool checked = false);
-    void slot_actdelete(bool checked = false);
 
 private:
-    void InitUI();
-    void appendToModel(CStuInfo &stuInfo);
+    void initUI();
+    void  addCss();
+    bool appendToModel(CStuInfo &stuInfo);
 private:
     Ui::MainWindow *ui;
-    CDataSourceSQLite *m_dataSource;
-    QStandardItemModel *m_standardModel;
-    AddStuInfoDialog *m_addDialog ;
-    QMenu *m_menu; //菜单
-    QAction *m_actdelete;
-    QAction *m_actupdate;
+
+
+    CDataSourceSQLite *m_dataSource;  // 数据源
+    QStandardItemModel *m_standardModel;  // 数据模型
+
 
 };
 #endif // MAINWINDOW_H

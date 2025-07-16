@@ -2,7 +2,13 @@
 
 CStuInfo::CStuInfo()
 {
-
+    m_id = 0;
+    m_name = "";
+    m_sex = "";
+    m_phone = "";
+    m_cet4 = 0;
+    m_gpa = 0;
+    m_overallScore = m_cet4 * 0.04 + m_gpa * 17.5;
 }
 
 CStuInfo::CStuInfo(int id, QString name, QString sex, QString phone, int cet4, double gpa)
@@ -14,6 +20,18 @@ CStuInfo::CStuInfo(int id, QString name, QString sex, QString phone, int cet4, d
     m_cet4 = cet4;
     m_gpa = gpa;
     m_overallScore = m_cet4 * 0.04 + m_gpa * 17.5;
+}
+
+bool CStuInfo::setData(int id, QString name, QString sex, QString phone, int cet4, double gpa)
+{
+    m_id = id;
+    m_name = name;
+    m_sex = sex;
+    m_phone = phone;
+    m_cet4 = cet4;
+    m_gpa = gpa;
+    m_overallScore = m_cet4 * 0.04 + m_gpa * 17.5;
+    return true;
 }
 
 int CStuInfo::id() const
@@ -86,10 +104,20 @@ void CStuInfo::setOverallScore(double overallScore)
     m_overallScore = overallScore;
 }
 
-std::ostream &operator<<(std::ostream &out, const CStuInfo &stuinfo)
+
+QDebug operator<<(QDebug dbg, const CStuInfo &stu)
 {
-    out << "ID:" << stuinfo.id() << " 姓名:" << stuinfo.name().toStdString() << " 性别：" << stuinfo.sex().toStdString() << " 手机号" << stuinfo.phone().toStdString() << " 四级成绩" << stuinfo.cet4() << " 平均成绩" << stuinfo.gpa() << " 总成绩" << stuinfo.overallScore();
-    return out;
+    QDebugStateSaver saver(dbg);          // 自动恢复 QDebug 状态
+    dbg.nospace() << "CStuInfo("
+       << "id="     << stu.id()
+       << ", name="  << stu.name()
+       << ", sex="   << stu.sex()
+       << ", phone=" << stu.phone()
+       << ", cet4="  << stu.cet4()
+       << ", gpa="   << stu.gpa()
+       << ", overallScore=" << stu.overallScore()
+       << ')';
+    return dbg;
 }
 
 
