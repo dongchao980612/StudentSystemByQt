@@ -1,172 +1,149 @@
 #include "cdatasourcesqlite.h"
 
 
-CDataSourceSQLite::CDataSourceSQLite()
+CDataSourceSQLite::CDataSourceSQLite(const QString &dbName)
 {
 
     m_db = QSqlDatabase::addDatabase("QSQLITE");
-    m_db.setDatabaseName("studentInfo.db");
-    if(!m_db.open())
-    {
-        qDebug() << "Failed to open database!";
-        return;
-    }
+    m_db.setDatabaseName(dbName);
 
-    QSqlQuery query;
-    QString sql = QString("create table if not exists tb_student"
-                          "(id int primary key not null,"
-                          "name varchar(50),"
-                          "sex varchar(2),"
-                          "phone varchar(11),"
-                          "cet4 int,"
-                          "gpa real,"
-                          "overallScore real);");
-
-    if(!query.exec(sql))
-    {
-        qDebug() << query.lastError();
-        qDebug() << "Exec create sql error...";
-        return;
-    }
-
-    m_db.close();
 }
 
 CDataSourceSQLite::~CDataSourceSQLite()
 {
-
+    close();
 }
 
-bool CDataSourceSQLite::seleteStuInfo(QList<CStuInfo> &stuInfoList)
+bool CDataSourceSQLite::open()
 {
-
-    if(!m_db.open())
+    if (isOpen())
     {
-        qDebug() << "Open database  error...";
-        return EXEC_FAILURE;
+        return true;
     }
-
-    QSqlQuery query;
-    QString sql = "select * from tb_student";
-    if(!query.exec(sql))
+    if (!m_db.open())
     {
-        qDebug() << "Failed to select sql error...";
-        return EXEC_FAILURE;
+        m_error = m_db.lastError().text() + " " + __FILE__ + " " + QString::number(__LINE__) ;
+        return false;
     }
-
-    while (query.next())
-    {
-        int Id = query.value("id").toInt();
-        QString Name = query.value("name").toString();
-        QString Sex = query.value("sex").toString();
-        QString Phone = query.value("phone").toString();
-        int Cet4 = query.value("cet4").toInt();
-        double Gpa = query.value("gpa").toDouble();
-        CStuInfo info(Id, Name, Sex, Phone, Cet4, Gpa);
-        stuInfoList.append(info);
-    }
-    m_db.close();
-
-    return EXEC_SUCCESS;
-
-
+    createTable();
+    return true;
 }
 
-bool CDataSourceSQLite::addStuInfo(CStuInfo &stuInfo)
+void CDataSourceSQLite::close()
 {
-    if(!m_db.open())
+    if (m_db.isOpen())
     {
-        qDebug() << "database open error...";
-        return EXEC_FAILURE;
-    }
-    else
-    {
-
-        int Id = stuInfo.id();
-        QString Name = stuInfo.name();
-        QString Sex = stuInfo.sex();
-        QString Phone = stuInfo.phone();
-        int Cet4 = stuInfo.cet4();
-        double Gpa = stuInfo.gpa();
-        double OverallScore = stuInfo.overallScore();
-
-        QSqlQuery query;
-        QString sql = QString("insert into tb_student(id,name,sex,phone,cet4,gpa,overallScore) values(%1,'%2','%3','%4',%5,%6,%7)").arg(Id).arg(Name).arg(Sex).arg(Phone).arg(Cet4).arg(Gpa).arg(OverallScore);
-        if(!query.exec(sql))
-        {
-            qDebug() << "lastError" << query.lastError().text();
-            qDebug() << sql;
-            qDebug() << "exec insert sql error...";
-            return EXEC_FAILURE;
-        }
-        else
-        {
-            m_db.close();
-            return EXEC_SUCCESS ;
-        }
+        m_db.close();
     }
 }
 
-bool CDataSourceSQLite::updateStuInfo(CStuInfo &stuInfo)
+bool CDataSourceSQLite::isOpen()
 {
-    if(!m_db.open())
-    {
-        qDebug() << "database open error...";
-        return EXEC_FAILURE;
-    }
-    else
-    {
-
-        int Id = stuInfo.id();
-        QString Name = stuInfo.name();
-        QString Sex = stuInfo.sex();
-        QString Phone = stuInfo.phone();
-        int Cet4 = stuInfo.cet4();
-        double Gpa = stuInfo.gpa();
-        double OverallScore = stuInfo.overallScore();
-
-        QSqlQuery query;
-        QString sql = QString("update tb_student set name='%2',sex='%3',phone='%4',cet4=%5,gpa=%6,overallScore=%7 where id=%1").arg(Id).arg(Name).arg(Sex).arg(Phone).arg(Cet4).arg(Gpa).arg(OverallScore);
-        if(!query.exec(sql))
-        {
-            qDebug() << "lastError" << query.lastError().text();
-            qDebug() << sql;
-            qDebug() << "exec insert sql error...";
-            return EXEC_FAILURE;
-        }
-        else
-        {
-            m_db.close();
-            return EXEC_SUCCESS ;
-        }
-    }
-
-
-    return EXEC_SUCCESS;
+    return m_db.isOpen();
 }
 
-bool CDataSourceSQLite::deleteStuInfo(int id)
+void CDataSourceSQLite::createTable()
 {
-    if(!m_db.open())
+    QSqlQuery q(m_db);
+    if (!q.exec("CREATE TABLE IF NOT EXISTS tb_student ("
+                "id INTEGER PRIMARY KEY,"
+                "name TEXT,"
+                "sex TEXT,"
+                "phone TEXT,"
+                "cet4 INTEGER,"
+                "gpa REAL,"
+                "overallScore REAL)"))
     {
-        qDebug() << "database open error...";
-        return EXEC_FAILURE;
+        m_error = q.lastError().text() + " " + __FILE__ + " " + QString::number(__LINE__) ;
     }
-    else
+}
+
+QList<CStuInfo> CDataSourceSQLite::list()
+{
+    QList<CStuInfo> res;
+    if (!open())
     {
-        QSqlQuery query;
-        QString sql = QString("delete from tb_student where id= %1").arg(id);
-        if(!query.exec(sql))
-        {
-            qDebug() << "lastError" << query.lastError().text();
-            qDebug() << sql;
-            qDebug() << "exec insert sql error...";
-            return EXEC_FAILURE;
-        }
-        else
-        {
-            m_db.close();
-            return EXEC_SUCCESS ;
-        }
+        return res;
     }
+
+    QSqlQuery q("SELECT * FROM tb_student", m_db);
+
+    while (q.next())
+    {
+        res.append({q.value("id").toInt(),
+                    q.value("name").toString(),
+                    q.value("sex").toString(),
+                    q.value("phone").toString(),
+                    q.value("cet4").toInt(),
+                    q.value("gpa").toDouble()});
+    }
+    return res;
+}
+
+bool CDataSourceSQLite::add(const CStuInfo &stu)
+{
+    if (!open())
+    {
+        return false;
+    }
+
+
+    QSqlQuery q(m_db);
+    q.prepare("INSERT INTO tb_student(id,name,sex,phone,cet4,gpa,overallScore) "
+              "VALUES (?,?,?,?,?,?,?)");
+    q.addBindValue(stu.id());
+    q.addBindValue(stu.name());
+    q.addBindValue(stu.sex());
+    q.addBindValue(stu.phone());
+    q.addBindValue(stu.cet4());
+    q.addBindValue(stu.gpa());
+    q.addBindValue(stu.overallScore());
+
+    if (!q.exec())
+    {
+        m_error = q.lastError().text() + " " + __FILE__ + " " + QString::number(__LINE__) ;
+        return false;
+    }
+    return true;
+}
+
+bool CDataSourceSQLite::update(const CStuInfo &stu)
+{
+    if (!open())
+    {
+        return false;
+    }
+    QSqlQuery q(m_db);
+    q.prepare("UPDATE tb_student SET name=?,sex=?,phone=?,cet4=?,gpa=?,overallScore=? "
+              "WHERE id=?");
+    q.addBindValue(stu.name());
+    q.addBindValue(stu.sex());
+    q.addBindValue(stu.phone());
+    q.addBindValue(stu.cet4());
+    q.addBindValue(stu.gpa());
+    q.addBindValue(stu.overallScore());
+    q.addBindValue(stu.id());
+    if (!q.exec())
+    {
+        m_error = q.lastError().text() + " " + __FILE__ + " " + QString::number(__LINE__) ;
+        return false;
+    }
+    return true;
+}
+
+bool CDataSourceSQLite::remove(int id)
+{
+    if (!open())
+    {
+        return false;
+    }
+    QSqlQuery q(m_db);
+    q.prepare("DELETE FROM tb_student WHERE id=?");
+    q.addBindValue(id);
+    if (!q.exec())
+    {
+        m_error = q.lastError().text() + " " + __FILE__ + " " + QString::number(__LINE__);
+        return false;
+    }
+    return true;
 }

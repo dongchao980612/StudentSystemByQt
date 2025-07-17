@@ -13,8 +13,6 @@ public:
     CStuInfo();
     CStuInfo(int id, QString name, QString sex, QString phone, int cet4, double gpa);
 
-    bool  setData(int id, QString name, QString sex, QString phone, int cet4, double gpa);
-
     int id() const;
     void setId(int id);
 

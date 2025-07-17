@@ -24,8 +24,6 @@ MainWindow::MainWindow(QWidget *parent)
     initUI();
 
 
-
-
 }
 
 MainWindow::~MainWindow()
@@ -36,7 +34,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::slot_addInfo(CStuInfo &stuInfo)
 {
-    m_dataSource->addStuInfo(stuInfo);
+    m_dataSource->add(stuInfo);
     appendToModel(stuInfo);
 }
 
@@ -50,19 +48,13 @@ void MainWindow::initUI()
 
 
     // 查询数据
-    QList<CStuInfo> stuInfoList;
+    QList<CStuInfo> stuInfoList = m_dataSource->list();
 
-    bool ret = m_dataSource->seleteStuInfo(stuInfoList);
-    if(ret)
-    {
-        qDebug() << "查询失败";
-        return ;
-    }
 
     // 将数据添加到模型
-    for (int i = 0; i < stuInfoList.size(); i++)
+    for (const CStuInfo &stu : stuInfoList)
     {
-        appendToModel(stuInfoList[i]);
+        appendToModel(stu);
     }
 
     //  将模型添加到视图
@@ -134,7 +126,7 @@ void MainWindow::addCss()
 }
 
 
-bool MainWindow::appendToModel(CStuInfo &stuInfo)
+bool MainWindow::appendToModel(const CStuInfo &stuInfo)
 {
     struct Column
     {
@@ -184,4 +176,64 @@ void MainWindow::on_add_Button_clicked()
 {
 
     m_addStuInfo->exec();
+}
+
+void MainWindow::on_delete_Button_clicked()
+{
+
+    // 先统计要删除的行数
+    int delCount = 0;
+    for (int row = 0; row < m_standardModel->rowCount(); ++row)
+    {
+        if (m_standardModel->item(row, 0)->checkState() == Qt::Checked)
+        {
+            ++delCount;
+        }
+    }
+
+    if (delCount == 0)
+    {
+        return;    // 没有选中就啥也不干
+    }
+
+    // 弹出确认框
+    auto reply = QMessageBox::question(
+                     this,
+                     "确认删除",
+                     QString("您已勾选 %1 条记录，确定要删除吗？").arg(delCount),
+                     QMessageBox::Yes | QMessageBox::No,
+                     QMessageBox::No);
+
+    if (reply != QMessageBox::Yes)
+    {
+        return;
+    }
+
+
+    // 倒序遍历，删除行时索引不会错位
+    for (int row = m_standardModel->rowCount() - 1; row >= 0; --row)
+    {
+        QStandardItem *checkItem = m_standardModel->item(row, 0);      // 第 0 列复选框
+        if (checkItem && checkItem->checkState() == Qt::Checked)
+        {
+            int id = checkItem->text().toInt();                // 学号
+            m_dataSource->remove(id);                          // 从数据库删除
+            m_standardModel->removeRow(row);                           // 从视图删除
+        }
+    }
+}
+
+void MainWindow::on_checkBox_stateChanged(int state)
+{
+    const Qt::CheckState checkState =
+        (state == Qt::Checked) ? Qt::Checked : Qt::Unchecked;
+
+    // 遍历模型，同步复选框
+    for (int row = 0; row < m_standardModel->rowCount(); ++row)
+    {
+        if (QStandardItem *item = m_standardModel->item(row, 0))
+        {
+            item->setCheckState(checkState);
+        }
+    }
 }

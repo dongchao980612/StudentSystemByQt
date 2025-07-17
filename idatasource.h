@@ -11,33 +11,22 @@ public:
     IDataSource();
     virtual ~IDataSource() = 0;
 
-    /**
-      * @brief 查询所有学生信息
-      * @param stuInfoList 学生信息列表
-      * @return true-成功 false-失败
-      */
-    virtual bool seleteStuInfo(QList<CStuInfo> &stuInfoList) = 0;
+    virtual bool open()   = 0;
+    virtual void close()  = 0;
+    virtual bool isOpen() = 0;
 
-    /**
-      * @brief 添加学生信息
-      * @param stuInfo 学生信息
-      * @return true-成功 false-失败
-      */
-    virtual bool addStuInfo(CStuInfo &stuInfo) = 0;
 
-    /**
-      * @brief 修改学生信息
-      * @param stuInfo 学生信息
-      * @return true-成功 false-失败
-      */
-    virtual bool updateStuInfo(CStuInfo &stuInfo) = 0;
 
-    /**
-      * @brief 删除学生信息
-      * @param id 学生ID
-      * @return true-成功 false-失败
-      */
-    virtual bool deleteStuInfo(int id) = 0;
+    virtual QList<CStuInfo> list()                       = 0;
+    virtual bool add(const CStuInfo &stu)                = 0;
+    virtual bool update(const CStuInfo &stu)             = 0;
+    virtual bool remove(int id)                          = 0;
+
+    /* 如需分页/过滤，可再扩展 */
+    virtual QString lastError() const
+    {
+        return {};
+    }
 };
 
 #endif // IDATASOURCE_H

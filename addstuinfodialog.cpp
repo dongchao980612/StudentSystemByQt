@@ -6,8 +6,8 @@ AddStuInfoDialog::AddStuInfoDialog(QWidget *parent) :
     ui(new Ui::AddStuInfoDialog)
 {
     ui->setupUi(this);
-    this->setMaximumSize(WIDTH, HEIGHT);
-    this->setMinimumSize(WIDTH, HEIGHT);
+    this->setMaximumSize(DIALOG_WIDTH, DIALOG_HEIGHT);
+    this->setMinimumSize(DIALOG_WIDTH, DIALOG_HEIGHT);
     this->setWindowTitle("添加/修改学生信息");
 
     initUI();

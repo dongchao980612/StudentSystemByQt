@@ -22,17 +22,7 @@ CStuInfo::CStuInfo(int id, QString name, QString sex, QString phone, int cet4, d
     m_overallScore = m_cet4 * 0.04 + m_gpa * 17.5;
 }
 
-bool CStuInfo::setData(int id, QString name, QString sex, QString phone, int cet4, double gpa)
-{
-    m_id = id;
-    m_name = name;
-    m_sex = sex;
-    m_phone = phone;
-    m_cet4 = cet4;
-    m_gpa = gpa;
-    m_overallScore = m_cet4 * 0.04 + m_gpa * 17.5;
-    return true;
-}
+
 
 int CStuInfo::id() const
 {

@@ -44,10 +44,14 @@ private slots:
     void  slot_addInfo(CStuInfo &stuInfo);
     void on_add_Button_clicked();
 
+    void on_delete_Button_clicked();
+
+    void on_checkBox_stateChanged(int arg1);
+
 private:
     void initUI();
     void  addCss();
-    bool appendToModel(CStuInfo &stuInfo);
+    bool appendToModel(const CStuInfo &stuInfo);
 private:
     Ui::MainWindow *ui;
 

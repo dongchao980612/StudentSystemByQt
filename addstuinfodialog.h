@@ -1,8 +1,8 @@
 #ifndef ADDSTUINFODIALOG_H
 #define ADDSTUINFODIALOG_H
 
-#define WIDTH 300
-#define HEIGHT 300
+#define DIALOG_WIDTH 300
+#define DIALOG_HEIGHT 300
 
 
 #include <QDialog>
