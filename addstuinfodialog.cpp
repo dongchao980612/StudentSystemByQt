@@ -8,7 +8,7 @@ AddStuInfoDialog::AddStuInfoDialog(QWidget *parent) :
     ui->setupUi(this);
     this->setMaximumSize(DIALOG_WIDTH, DIALOG_HEIGHT);
     this->setMinimumSize(DIALOG_WIDTH, DIALOG_HEIGHT);
-    this->setWindowTitle("添加/修改学生信息");
+     setWindowTitle(this->mode() == AddMode ? "添加学生" : "修改学生");
 
     initUI();
 }
@@ -16,6 +16,17 @@ AddStuInfoDialog::AddStuInfoDialog(QWidget *parent) :
 AddStuInfoDialog::~AddStuInfoDialog()
 {
     delete ui;
+}
+
+void AddStuInfoDialog::setStuInfo(CStuInfo &info)
+{
+    ui->lineEdit_ID->setText(QString("%1").arg(info.id(), 4, 10, QLatin1Char('0')));
+    ui->lineEdit_ID->setReadOnly(true); // 设置为不可编辑
+    ui->lineEdit_Name->setText(info.name());
+    ui->comboBox_Sex->setCurrentText(info.sex());
+    ui->lineEdit_Phone->setText(info.phone());
+    ui->spinBox_Cet4->setValue(info.cet4());
+    ui->doubleSpinBox_Gpa->setValue(info.gpa());
 }
 
 void AddStuInfoDialog::on_pushButton_OK_clicked()
@@ -29,10 +40,23 @@ void AddStuInfoDialog::on_pushButton_OK_clicked()
     int cet4 = ui->spinBox_Cet4->value();
     double gpa = ui->doubleSpinBox_Gpa->value();
     CStuInfo info(id, name, sex, phone, cet4, gpa);
-    // qDebug() << info;
-    emit sig_addInfo(info);
-    this->clearData();
-    accept();                     // 关闭对话框
+
+
+    /* 方案 B：保持你原来两个信号（与枚举共存） */
+    if (m_mode == EditMode)
+    {
+        emit sig_updateInfo(info);
+    }
+    else
+    {
+        emit sig_addInfo(info);
+    }
+
+    accept();
+
+
+
+
 }
 void AddStuInfoDialog::clearData()
 {
@@ -90,5 +114,19 @@ void AddStuInfoDialog::initUI()
 void AddStuInfoDialog::on_pushButton_Cancel_clicked()
 {
     this->close();
+}
+
+
+
+void AddStuInfoDialog::setMode(AddStuInfoDialog::Mode mode)
+{
+
+    m_mode = mode;
+    setWindowTitle(mode == AddMode ? "添加学生" : "修改学生");
+    if (mode == AddMode)
+    {
+        clearData();
+    }
+
 }
 

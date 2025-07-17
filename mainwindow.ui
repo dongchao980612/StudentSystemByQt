@@ -44,6 +44,13 @@
         </property>
        </spacer>
       </item>
+      <item>
+       <widget class="QPushButton" name="stress_Button">
+        <property name="text">
+         <string>压力测试</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </item>
     <item>

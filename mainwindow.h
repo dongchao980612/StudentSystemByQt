@@ -9,6 +9,8 @@
 
 #include <QMenu>
 #include <QAction>
+#include  <QElapsedTimer>
+
 
 #include "cdatasourcesqlite.h"
 #include "cstuinfo.h"
@@ -17,14 +19,10 @@
 #define WIDTH 1100
 #define HEIGHT 800
 
-#define ID_COLUMN 0
-#define NAME_COLUMN 1
-#define SEX_COLUMN 2
-#define PHONE_COLUMN 3
-#define CET4_COLUMN 4
-#define GPA_COLUMN 5
-#define OVERALLSCORE_COLUMN 6
-
+enum Columns
+{
+    ColID, ColName, ColSex, ColPhone, ColCET4, ColGPA, ColOverall
+};
 
 QT_BEGIN_NAMESPACE
 namespace Ui
@@ -41,24 +39,41 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 private slots:
-    void  slot_addInfo(CStuInfo &stuInfo);
+    void slot_itemChanged(QStandardItem *item);
+    void slot_addInfo(CStuInfo &stuInfo);
+    void  slot_updateInfo(CStuInfo &stuInfo);
+
+    void slot_customContextMenuRequested(const QPoint &pos);
+    void  slot_actUpdate();
+    void  slot_actDelete();
+
+
     void on_add_Button_clicked();
 
     void on_delete_Button_clicked();
 
     void on_checkBox_stateChanged(int arg1);
 
+    void on_stress_Button_clicked();
+
 private:
     void initUI();
     void  addCss();
     bool appendToModel(const CStuInfo &stuInfo);
+
 private:
     Ui::MainWindow *ui;
 
 
     CDataSourceSQLite *m_dataSource;  // 数据源
     QStandardItemModel *m_standardModel;  // 数据模型
-    AddStuInfoDialog *m_addStuInfo;
+    AddStuInfoDialog *m_addStuInfoDlg;
+
+    QMenu  *m_menu;
+    QAction *m_actUpdate; // 修改菜单项
+    QAction *m_actDelete; //删除菜单项
 
 };
+
+static CStuInfo stuFromRow(const QStandardItemModel *m, int row);
 #endif // MAINWINDOW_H

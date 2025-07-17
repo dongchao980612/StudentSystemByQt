@@ -11,18 +11,10 @@ MainWindow::MainWindow(QWidget *parent)
     this->setMaximumSize(WIDTH, HEIGHT);
     this->setMinimumSize(WIDTH, HEIGHT);
 
-    m_dataSource = new CDataSourceSQLite();
-    m_standardModel = new QStandardItemModel(this);
-    m_addStuInfo = new AddStuInfoDialog(this);
-
-    connect(m_addStuInfo, &AddStuInfoDialog::sig_addInfo,
-            this, &MainWindow::slot_addInfo);
-
 
 
     addCss();
     initUI();
-
 
 }
 
@@ -32,15 +24,117 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::slot_itemChanged(QStandardItem *item)
+{
+    // 1. 只关心第 0 列的复选框
+    if (item->column() != 0 || !item->isCheckable())
+    {
+        return;
+    }
+
+    // 2. 统计当前已勾选行数
+    int checkedCount = 0;
+    int totalCount   = m_standardModel->rowCount();
+    for (int r = 0; r < totalCount; ++r)
+    {
+        if (m_standardModel->item(r, 0)->checkState() == Qt::Checked)
+        {
+            ++checkedCount;
+        }
+    }
+
+    // 3. 更新全选按钮状态
+    QCheckBox *checkAll = ui->checkBox;   // 你的全选框
+    checkAll->blockSignals(true);         // 防止递归触发
+    if (checkedCount == totalCount && totalCount > 0)
+    {
+        checkAll->setCheckState(Qt::Checked);
+    }
+    else if (checkedCount == 0)
+    {
+        checkAll->setCheckState(Qt::Unchecked);
+    }
+    else
+    {
+        checkAll->setCheckState(Qt::PartiallyChecked);
+    }
+    checkAll->blockSignals(false);
+}
+
 void MainWindow::slot_addInfo(CStuInfo &stuInfo)
 {
+    m_addStuInfoDlg->setMode(AddStuInfoDialog::AddMode);
     m_dataSource->add(stuInfo);
     appendToModel(stuInfo);
 }
 
-void MainWindow::initUI()
+void MainWindow::slot_updateInfo(CStuInfo &stuInfo)
+{
+    m_dataSource->update(stuInfo);
+    int row = ui->tableView->currentIndex().row();
+    m_standardModel->setData(m_standardModel->item(row, ColName)->index(), stuInfo.name());
+    m_standardModel->setData(m_standardModel->item(row, ColSex)->index(), stuInfo.sex());
+    m_standardModel->setData(m_standardModel->item(row, ColPhone)->index(), stuInfo.phone());
+    m_standardModel->setData(m_standardModel->item(row, ColCET4)->index(), stuInfo.cet4());
+    m_standardModel->setData(m_standardModel->item(row, ColGPA)->index(), stuInfo.gpa());
+    m_standardModel->setData(m_standardModel->item(row, ColOverall)->index(), stuInfo.overallScore());
+}
+
+void MainWindow::slot_customContextMenuRequested(const QPoint &pos)
 {
 
+    if(m_standardModel->itemFromIndex(ui->tableView->indexAt(pos)) != NULL)
+    {
+        m_menu->exec(QCursor::pos());
+    }
+}
+
+void MainWindow::slot_actUpdate()
+{
+    int row = ui->tableView->currentIndex().row();
+    if (row < 0)
+    {
+        return;
+    }
+
+    CStuInfo stu = stuFromRow(m_standardModel, row);   // 🔹一行搞定
+    m_addStuInfoDlg->setMode(AddStuInfoDialog::EditMode);
+    m_addStuInfoDlg->setStuInfo(stu);   // 你已有的回填接口
+    m_addStuInfoDlg->exec();
+}
+
+void MainWindow::slot_actDelete()
+{
+    int row = ui->tableView->currentIndex().row();
+    int id = m_standardModel->item(row)->text().toInt();
+    m_dataSource->remove(id);
+    m_standardModel->removeRow(row);
+}
+
+void MainWindow::initUI()
+{
+    // 对象实例化
+    m_dataSource = new CDataSourceSQLite();
+    m_standardModel = new QStandardItemModel(this);
+    m_addStuInfoDlg = new AddStuInfoDialog(this);
+
+    m_menu = new QMenu(this);
+
+    m_actUpdate = new QAction("修改", m_menu);
+    m_actDelete = new QAction("删除", m_menu);
+    m_menu->addAction(m_actUpdate);
+    m_menu->addAction(m_actDelete);
+
+
+    ui->tableView->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    // 槽函数连接
+    connect(m_standardModel, &QStandardItemModel::itemChanged, this, &MainWindow::slot_itemChanged);
+    connect(ui->tableView, &QTableView::customContextMenuRequested, this, &MainWindow::slot_customContextMenuRequested);
+    connect(m_addStuInfoDlg, &AddStuInfoDialog::sig_addInfo, this, &MainWindow::slot_addInfo);
+    connect(m_addStuInfoDlg, &AddStuInfoDialog::sig_updateInfo, this, &MainWindow::slot_updateInfo);
+    connect(m_actUpdate, &QAction::triggered, this, &MainWindow::slot_actUpdate);
+    connect(m_actDelete, &QAction::triggered, this, &MainWindow::slot_actDelete);
     // 添加表头
     QStringList labels;
     labels << "学号" << "姓名" << "性别" << "手机号" << "cet4" << "gpa" << "综合成绩";
@@ -175,7 +269,7 @@ bool MainWindow::appendToModel(const CStuInfo &stuInfo)
 void MainWindow::on_add_Button_clicked()
 {
 
-    m_addStuInfo->exec();
+    m_addStuInfoDlg->exec();
 }
 
 void MainWindow::on_delete_Button_clicked()
@@ -236,4 +330,36 @@ void MainWindow::on_checkBox_stateChanged(int state)
             item->setCheckState(checkState);
         }
     }
+}
+static CStuInfo stuFromRow(const QStandardItemModel *m, int row)
+{
+    return CStuInfo(
+               m->item(row, ColID)->text().toInt(),
+               m->item(row, ColName)->text(),
+               m->item(row, ColSex)->text(),
+               m->item(row, ColPhone)->text(),
+               m->item(row, ColCET4)->text().toInt(),
+               m->item(row, ColGPA)->text().toDouble()
+           );
+}
+
+void MainWindow::on_stress_Button_clicked()
+{
+    CStuInfo info;
+    info.setName("Stress");
+    info.setSex("M");
+    info.setPhone("13800000000");
+    info.setCet4(550);
+    info.setGpa(3.5);
+    info.setOverallScore(88.8);
+
+    QElapsedTimer t;
+    t.start();
+    int len_of_test_data = 10000;
+    for (int i = 1; i <= len_of_test_data; ++i)
+    {
+        info.setId(900000 + i);
+        m_dataSource->add(info);
+    }
+    qDebug() << "插入"<<len_of_test_data<<"条数据耗时:" << t.elapsed() << "ms";
 }
